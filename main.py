@@ -20,49 +20,62 @@ def all_children (wid) :
             _list.extend(item.winfo_children())
 
     return _list
-def retreveStocks(ticker):
-    # try:
-    # except:
-    #     print("nope")
-    stock = yf.Ticker(ticker)
-    stock_historical = stock.history(start="2020-01-1", interval="1d")
+class stocksGraph(object):
+    def __init__(self, ticker):
+        self.stock =  yf.Ticker(ticker)
+        self.stock_historical = self.stock.history(start="2020-01-1", interval="1d")
+        self.stock_historical = self.stock_historical.drop(['Stock Splits', 'Dividends', 'Volume', 'Open', 'Low', 'High'], axis = 1)
+        self.figure2 = plt.Figure(figsize=(5,4), dpi=100)
+        self.ax2 = self.figure2.add_subplot(111)   
+        self.line2 = FigureCanvasTkAgg(self.figure2, window)
+        self.line2.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+        self.stock_historical.plot(kind='line', legend=True, ax=self.ax2, color='r', fontsize=10)
+        # company_name = stock.info['longName']
+        self.ax2.set_title(ticker.upper())
+    
+    def deleteGraph(self):
+        print("wpl;asdjkfjlsdak;jlk;as")
+        self.line2.get_tk_widget().destroy()
 
-    stock_historical = stock_historical.drop(['Stock Splits', 'Dividends', 'Volume', 'Open', 'Low', 'High'], axis = 1)
-    # indexNamesArr = stock_historical.index.values
-    # listOfRowIndexLabels = indexNamesArr
-    # for i in listOfRowIndexLabels:
-    #     i = numpy.datetime_as_string(i, unit='D')
-    #     list.append(i)
+    def retreveStocks():
+        # try:
+        # except:
+        #     print("nope")
+        # stock_historical = stock.history(start="2020-01-1", interval="1d")
 
-    # listHistoricalvalues = stock_historical.values.tolist()
+        # stock_historical = stock_historical.drop(['Stock Splits', 'Dividends', 'Volume', 'Open', 'Low', 'High'], axis = 1)
+        # indexNamesArr = stock_historical.index.values
+        # listOfRowIndexLabels = indexNamesArr
+        # for i in listOfRowIndexLabels:
+        #     i = numpy.datetime_as_string(i, unit='D')
+        #     list.append(i)
 
-    # for i in range(len(listHistoricalvalues)): #Traversing through the main list
-    #     for j in range (len(listHistoricalvalues[i])): #Traversing through each sublist
-    #         list2.append(listHistoricalvalues[i][j])
+        # listHistoricalvalues = stock_historical.values.tolist()
 
-    figure2 = plt.Figure(figsize=(5,4), dpi=100)
-    ax2 = figure2.add_subplot(111)   
-    line2 = FigureCanvasTkAgg(figure2, window)
-    line2.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-    stock_historical.plot(kind='line', legend=True, ax=ax2, color='r', fontsize=10)
-    # company_name = stock.info['longName']
-    ax2.set_title(ticker.upper())
-    line2.delete("all")
-    # print(figure2, ax2, line2)
+        # for i in range(len(listHistoricalvalues)): #Traversing through the main list
+        #     for j in range (len(listHistoricalvalues[i])): #Traversing through each sublist
+        #         list2.append(listHistoricalvalues[i][j])
 
-    # print(getCompany('tsla'))
+        figure2 = plt.Figure(figsize=(5,4), dpi=100)
+        ax2 = figure2.add_subplot(111)   
+        line2 = FigureCanvasTkAgg(figure2, window)
+        line2.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
+        stock_historical.plot(kind='line', legend=True, ax=ax2, color='r', fontsize=10)
+        # company_name = stock.info['longName']
+        ax2.set_title(ticker.upper())
+        line2.delete()
+        # print(figure2, ax2, line2)
 
+        # print(getCompany('tsla'))
 
 
 
 
 def StockRetrieve():
-    l = e1.get()
-    retreveStocks(l)
-    print(all_children(window))
+    global gets
 
-    print("hello")
-
+    
+    
 def task():
     l = e1.get()
     try:
@@ -70,6 +83,23 @@ def task():
 
     except:
         print("nope")
+    try:
+        l = e1.get()
+        gets = stocksGraph(l)
+        for i in all_children(window):
+            if str(i) == ".!canvas":
+                print("test")
+                # l = e1.get()
+                # gets = stocksGraph(l)
+                gets.deleteGraph()
+        # l = e1.get()
+        # gets = stocksGraph(l)
+        # retreveStocks(l)
+        print(all_children(window))
+
+        print("hello")
+    except:
+        print("hello")
     window.after(1000, task)  # reschedule event in 2 seconds
     # convert ndarray to list
 
@@ -91,6 +121,8 @@ label.pack()
 e1 = tk.Entry(window)
 e1.place(x=700,y=100)
 e1.pack()
+
+
 
 b = tk.Button(window, text="Okay", command=StockRetrieve)
 b.place(x=700,y=100)
