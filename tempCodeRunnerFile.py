@@ -1,1 +1,2 @@
-base_font = pygame.font.Font(None, 32)
+                        # tickerStock.user_text = ""
+                        # graph = plotClass(tickerStock.user_text)

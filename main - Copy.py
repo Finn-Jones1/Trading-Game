@@ -10,6 +10,8 @@ import pylab
 import numpy as np
 import tkinter as tk
 from tkinter import *
+from tkinter import messagebox
+
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -22,48 +24,33 @@ lightGrey = (211,211,211)
 
 FlexyPath = os.path.dirname(os.path.abspath(__file__))
 
-
-# pygame.display.set_caption("Stock Trading Game")
+f=open(FlexyPath + "/data.txt", "r")
+contents = eval(f.read())
+f.close()
 
 root = tk.Tk()
-embed = tk.Frame(root, width=1000, height=550)
+embed = tk.Frame(root, width=700, height=550)
 embed.grid(columnspan=500, rowspan=500)
 embed.pack(side=LEFT)
-# buttonwin = tk.Frame(root, width=75, height=500)
-# buttonwin.pack(side=LEFT)
 os.environ['SDL_WINDOWID'] = str(embed.winfo_id())
 os.environ['SDL_VIDEODRIVER'] = 'windib'
-window = pygame.display.set_mode((1000 , 550))
+window = pygame.display.set_mode((700 , 550))
 window.fill(pygame.Color(255, 255, 255))
+
 pygame.display.init()
 pygame.display.update()
 
-
-
 listbox = Listbox(root)
-# Adding Listbox to the left
-# side of root window
 listbox.pack(side = LEFT, fill = BOTH)
-
-# Creating a Scrollbar and 
-# attaching it to root window
 scrollbar = Scrollbar(root)
-
-# Adding Scrollbar to the right
-# side of root window
 scrollbar.pack(side = RIGHT, fill = BOTH)
-
-# Insert elements into the listbox
-
-    
-# Attaching Listbox to Scrollbar
-# Since we need to have a vertical 
-# scroll we use yscrollcommand
 listbox.config(yscrollcommand = scrollbar.set)
 
 root.update()
 pygame.init()
 base_font = pygame.font.Font(None, 32)
+
+Found = False
 class plotClass(object):
     def __init__(self, tickerText):
         self.tickerText = tickerText
@@ -86,7 +73,6 @@ class plotClass(object):
 
 
     def draw(self):
-        # print("rendering")
         self.canvas = agg.FigureCanvasAgg(self.figure2)
         self.canvas.draw()
         self.renderer = self.canvas.get_renderer()
@@ -124,24 +110,78 @@ class textInput(object):
         window.blit(self.text_surface, (self.input_rect.x +5, self.input_rect.y+5))
         self.input_rect.w = max(100, self.text_surface.get_width() + 10)
 
+class button(object):
+    def __init__(self, x, y, text):
+        self.x = x
+        self.y = y
+        self.text = text
+        self.rectangle = pygame.Rect(self.x,self.y,100,32)
+        self.msel = "Shares"
+    def draw(self, market):
+        global marketSelected
+        global Found
+        self.colour = lightGrey
+        self.market = market
+
+        if self.rectangle.collidepoint(pygame.mouse.get_pos()):
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.msel = ""
+                self.colour = black
+                if self.market == "Cripto AU":
+                    self.msel = "Cripto AU"
+
+                elif self.market == "Shares":
+                    self.msel = "Shares"
+
+                elif self.market == "Currency":
+                    self.msel = "Currency"
+
+                elif self.market == "Indices":
+                    self.msel = "Indices"
+
+                elif self.market == "Futures":
+                    self.msel = "Futures"
+
+                if self.msel != "" and Found == False:
+                    Found = True
+                    marketSelected = self.msel
+                    print(marketSelected+"after")
+
+            else:
+                self.colour = grey
+
+
+
+        pygame.draw.rect(window, self.colour, self.rectangle)
+        showText(self.text, 20, (self.x + 5, self.y + 5), black)
+
+
+
+        
+
                 
 def reDraw():
+    global marketSelected
+    global Found
     window.fill(white)
     graph.draw()
-    showText("Balance: $" + str(bankBalance), 25, (400,450), black)
-    # showText("Balance: $" + str(bankBalance), 25, (400,450), black)
-    # pygame.draw.rect(window, colour, input_rect, 2)
-    # window.blit(text_surface, (input_rect.x +5, input_rect.y+5))
-    # try:
-    #     plotGraph()
+    criptoAu.draw("Cripto AU")
+    Shares.draw("Shares")
+    Currency.draw("Currency")
+    Indices.draw("Indices")
+    Futures.draw("Futures")
+    Found = False
 
-    # except:
-    #     print("error")
-    tickerStock.draw("Stock Ticker")
-    buySellBox.draw("Buy/Sell")
-
+    showText("Balance: $" + str(bankBalance), 25, (20,450), black)
+    showText("Current Market: " + marketSelected, 25, (20,500), black)
+    tickerStock.draw("Ticker (e.g. TSLA)")
+    buySellBox.draw("Buy$/Sell$")
     pygame.display.flip()
     root.update()
+
+def save():
+    f = open(FlexyPath + '/data.txt','w')
+    f.write(str(FolioStocks))
     
 def textboxD(boxSelect):
     
@@ -150,9 +190,6 @@ def textboxD(boxSelect):
             boxSelect.user_text = ""
             boxSelect.active = True
         else:
-            # boxSelect.user_text = "Type Here"
-            # if boxSelect == tickerStock:
-            # graph = plotClass(tickerStock.user_text)
             boxSelect.active = False
 
     elif boxSelect.active == False and boxSelect.input_rect.collidepoint(pygame.mouse.get_pos()):
@@ -185,7 +222,19 @@ tickerStock = textInput("Type Here", 500, 40)
 graph = plotClass(tickerStock.user_text)
 text = "Price: "
 buySellBox = textInput("Type Here", 500, 100)
+buttonYs = 500
+criptoAu = button(buttonYs, 200, "Cripto AU")
+Shares = button(buttonYs, 250, "Shares")
+Currency = button(buttonYs, 300, "Currency")
+Indices = button(buttonYs, 350, "Indices")
+Futures = button(buttonYs, 400, "Futures")
 FolioStocks = {}
+marketSelected = "Stocks"
+print(contents)
+if str(contents) != str(FolioStocks):
+    FolioStocks = contents
+    for key, val in FolioStocks.items():
+        listbox.insert(END, str(key) + " => "+ str(val))
 bankBalance = 200000
 
 while running:
@@ -195,41 +244,48 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        pygame.draw.rect(window,black,(600,200,170,50))
 
+        
         textboxD(tickerStock)
         textboxD(buySellBox)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                if tickerStock.active is True:
-                    graph = plotClass(tickerStock.user_text)
-                elif buySellBox.active is True:
-                    try:
-                        if tickerStock.user_text == "Type Here":
-                            tickerStock.user_text = "tsla"
+                print(marketSelected)
+                print(tickerStock.user_text.isalpha())
+                if marketSelected == "Cripto AU" and "-AUD" in tickerStock.user_text or marketSelected == "Stocks" and tickerStock.user_text.isalpha() or marketSelected == "Currency" and "=X" in tickerStock.user_text or marketSelected == "Indices" and "^" in tickerStock.user_text or marketSelected == "Futures" and "=F" in tickerStock.user_text:
+                    if tickerStock.active is True:
+                        try:
+                            graph = plotClass(tickerStock.user_text)
+                        except:
+                            messagebox.showerror("Error", "Please enter a valid ticker for the selected market")
 
-                        bankBalance -= int(buySellBox.user_text)
- 
-                        if tickerStock.user_text in FolioStocks:
-                            FolioStocks[tickerStock.user_text] += int(buySellBox.user_text) / int(graph.livePrice)
-                        else:
-                            FolioStocks[tickerStock.user_text] = int(buySellBox.user_text) / int(graph.livePrice)
-                        print(FolioStocks)
+                            # tickerStock.user_text = ""
+                            # graph = plotClass(tickerStock.user_text)
+                    elif buySellBox.active is True:
+                        try:
+                            if tickerStock.user_text == "Type Here":
+                                tickerStock.user_text = "tsla"
 
-                    except:
-                        print("not a real number")
-                    for key, val in FolioStocks.items():
-                        listbox.insert(END, str(key) + " => "+ str(val))
-                
+                            bankBalance -= int(buySellBox.user_text)
+    
+                            if tickerStock.user_text in FolioStocks:
+                                FolioStocks[tickerStock.user_text] += int(buySellBox.user_text) / int(graph.livePrice)
+                            else:
+                                FolioStocks[tickerStock.user_text] = int(buySellBox.user_text) / int(graph.livePrice)
+                            print(FolioStocks)
+
+                        except:
+                            messagebox.showerror("Error", "Please enter a valid whole number")
+
+                        save()
+                        listbox.delete(0, tk.END)
+                        for key, val in FolioStocks.items():
+                            listbox.insert(END, str(key) + " => "+ str(val))
+                else:
+                    messagebox.showerror("Error", "Please enter a valid ticker for the selected market")
             if event.key == pygame.K_ESCAPE:
                 running = False
-
-
-    
-
-
-
-    
-
 
     reDraw()
 
