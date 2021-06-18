@@ -59,21 +59,16 @@ class plotClass(object):
     def __init__(self, tickerText):
         self.tickerText = tickerText
         if tickerText == "Type Here":
-            print("runnning")
             self.tickerText = "tsla"
         self.stock = yf.Ticker(self.tickerText)
-        print(self.stock)
         self.stock_historical = self.stock.history(start="2020-01-1", interval="1d")
-        print(self.stock_historical)
         self.stock_historical = self.stock_historical.drop(['Stock Splits', 'Dividends', 'Volume', 'Open', 'Low', 'High'], axis = 1)
         self.window = pygame.display.get_surface()
-
         self.figure2 = plt.Figure(figsize=(5,4), dpi=100)
         self.ax2 = self.figure2.add_subplot(111)   
         self.stock_historical.plot(kind='line', legend=True, ax=self.ax2, color='r', fontsize=10)
         self.livePrice = si.get_live_price(self.tickerText)     
-        print(self.livePrice)
-        self.ax2.set_title(self.tickerText.upper() + " Curr Price: "+ str(self.livePrice))
+        self.ax2.set_title("Sellected Stock: " + self.tickerText.upper() + " Curr Price: "+ str(self.livePrice))
 
 
     def draw(self):
@@ -149,7 +144,6 @@ class button(object):
                 if self.msel != "" and Found == False:
                     Found = True
                     marketSelected = self.msel
-                    print(marketSelected+"after")
 
             else:
                 self.colour = grey
@@ -233,7 +227,6 @@ Indices = button(buttonYs, 350, "Indices")
 Futures = button(buttonYs, 400, "Futures")
 FolioStocks = {}
 marketSelected = "Shares"
-print(contents)
 if str(contents) != str(FolioStocks):
     FolioStocks = contents
     for key, val in FolioStocks.items():
@@ -254,8 +247,6 @@ while running:
         textboxD(buySellBox)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                print(marketSelected)
-                print(tickerStock.user_text.isalpha())
                 if marketSelected == "Cripto AU" and "-AUD" in tickerStock.user_text.upper() or marketSelected == "Shares" and tickerStock.user_text.isalpha() or marketSelected == "Currency" and "=X" in tickerStock.user_text.upper() or marketSelected == "Indices" and "^" in tickerStock.user_text.upper() or marketSelected == "Futures" and "=F" in tickerStock.user_text.upper():
                     if tickerStock.active is True:
                         try:
@@ -265,25 +256,35 @@ while running:
 
                     elif buySellBox.active is True:
 
-                        # try:
                         if tickerStock.user_text == "Type Here":
                             tickerStock.user_text = "tsla"
 
-                        bankBalance -= int(buySellBox.user_text)
-
-                        if tickerStock.user_text.upper() in FolioStocks:
-                            print(graph.livePrice)
-                            FolioStocks[tickerStock.user_text.upper()] += float(buySellBox.user_text) / float(graph.livePrice)
+                        # print(FolioStocks[tickerStock.user_text.upper()])
+                        
+                        if tickerStock.user_text.upper() in FolioStocks and int(buySellBox.user_text) < 0 and FolioStocks[tickerStock.user_text.upper()] + float(buySellBox.user_text) / float(graph.livePrice) <= 0:
+                            messagebox.showerror("Error", "Not Enough Shares Avalable")
                         else:
-                            FolioStocks[tickerStock.user_text.upper()] = float(buySellBox.user_text) / float(graph.livePrice)
-                        print(FolioStocks)
+                            bankBalance -= int(buySellBox.user_text)
 
-                        save()
-                        listbox.delete(0, tk.END)
-                        for key, val in FolioStocks.items():
-                            listbox.insert(END, str(key) + " => "+ str(val))
+                            if tickerStock.user_text.upper() in FolioStocks:
+                                FolioStocks[tickerStock.user_text.upper()] += float(buySellBox.user_text) / float(graph.livePrice)
+                            else:
+                                FolioStocks[tickerStock.user_text.upper()] = float(buySellBox.user_text) / float(graph.livePrice)
+
+                            save()
+                            listbox.delete(0, tk.END)
+                            for key, val in FolioStocks.items():
+                                listbox.insert(END, str(key) + " => "+ str(val))
                 else:
                     messagebox.showerror("Error", "Please enter a valid ticker for the selected market")
+
+            if bankBalance >= 1000000:
+                messagebox.showerror("Great Sucess", "You have achieved Warren Buffet status")
+                bankBalance = 200000
+                FolioStocks = {}
+                listbox.delete(0, tk.END)
+                save()
+
             if event.key == pygame.K_ESCAPE:
                 running = False
                 

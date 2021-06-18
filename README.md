@@ -1,6 +1,9 @@
 # Trading Game
  Python stocks trading game using yahoo finance api
 
+# Disclamer
+This program will only run on windows
+
 # Game Justification
 ### Problem Definition
 The problem that I am aiming to solve with this game is to allow people that are interested in trading on the stock market but either don't have the money or don't want to take the risk.
