@@ -19,11 +19,11 @@ Once a stock is purchased it will be added to the bought list on the right of th
 Any progress on the game will be saved to a text file in the same directory as the python file to reset the game set the data.txt file to "{}" and the balance.txt file to the desired starting amount of money.
 
 # Dependancies
-pip3 install yfinance
-pip3 install yahoo_fin
-pip3 install matplotlib
-pip3 install pygame==1.9.6
-pip3 install tkinter
+- pip3 install yfinance
+- pip3 install yahoo_fin
+- pip3 install matplotlib
+- pip3 install pygame==1.9.6
+- pip3 install tkinter
 
 
 
